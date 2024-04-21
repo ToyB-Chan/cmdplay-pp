@@ -233,7 +233,7 @@ std::string cmdplay::Asciifier::BuildFrame(const uint8_t* rgbData, bool fullRedr
 		}
 
 		bool repositionCursor = false;
-		int lastRow = 0;
+		int currentRow = 0;
 		for (int i = 0; i < m_frameWidth * m_frameHeight; i++)
 		{
 			int32_t pixelBrightness =
@@ -281,6 +281,13 @@ std::string cmdplay::Asciifier::BuildFrame(const uint8_t* rgbData, bool fullRedr
 			{
 				ss << "\x1B[" << std::to_string(i / m_frameWidth + 1) << ";" << std::to_string(i % m_frameWidth + 1) << "H";
 				repositionCursor = false;
+				currentRow = i / m_frameWidth;
+			}
+
+			if (currentRow != i / m_frameWidth)
+			{
+				ss << "\n";
+				currentRow = i / m_frameWidth;
 			}
 
 			if (!(ColorComponentNearlyEquals(m_frameBuffer[i].r, m_lastSetColor[0], COLOR_BATCHING_TOLERANCE) &&
@@ -294,12 +301,6 @@ std::string cmdplay::Asciifier::BuildFrame(const uint8_t* rgbData, bool fullRedr
 			}
 
 			ss << m_frameBuffer[i].c;
-
-			if (i / m_frameWidth != lastRow)
-			{
-				repositionCursor = true;
-				lastRow = i / m_frameWidth;
-			}
 		}
 
 		return ss.str();
